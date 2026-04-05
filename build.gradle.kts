@@ -1,0 +1,9 @@
+// Root build.gradle.kts — apenas declara plugins sem aplicá-los.
+// Obrigatório para que o Gradle encontre os plugins ao sincronizar.
+plugins {
+    alias(libs.plugins.android.application)   apply false
+    alias(libs.plugins.kotlin.multiplatform)  apply false
+    alias(libs.plugins.compose.multiplatform) apply false
+    alias(libs.plugins.compose.compiler)      apply false
+    alias(libs.plugins.kotlin.serialization)  apply false
+}

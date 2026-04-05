@@ -1,0 +1,186 @@
+package com.pokedex.app.presentation.screens.team
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import com.pokedex.app.domain.model.PokemonDetail
+import com.pokedex.app.presentation.theme.typeColor
+
+// ── Estética Apple (iOS) ───────────────────────────────────────────────────────
+// Design inspirado em SwiftUI/UIKit: cantos arredondados agressivos, tipografia
+// SF-style, sem botões coloridos demais, hierarquia limpa e espaçada.
+@Composable
+actual fun PlatformTeamContent(
+    pokemons: List<PokemonDetail>,
+    onRemove: (pokemonId: Int) -> Unit
+) {
+    val iosBackground = MaterialTheme.colorScheme.background
+    val iosGrouped    = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(iosBackground)
+    ) {
+        // Cabeçalho estilo iOS — título grande à esquerda
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 12.dp)
+        ) {
+            Text(
+                text       = "Meu Time",
+                fontSize   = 34.sp,
+                fontWeight = FontWeight.Bold,
+                color      = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text     = "${pokemons.size} de 6 Pokémons selecionados",
+                fontSize = 15.sp,
+                color    = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (pokemons.isEmpty()) {
+            // Placeholder estilo iOS — ícone + texto centralizados
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier        = Modifier
+                            .size(80.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(iosGrouped),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("⊕", fontSize = 36.sp)
+                    }
+                    Text(
+                        "Nenhum Pokémon",
+                        fontSize   = 17.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color      = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        "Adicione Pokémons na tela de detalhes.",
+                        fontSize = 14.sp,
+                        color    = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            // Lista estilo UITableView agrupada
+            LazyColumn(
+                contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(1.dp),
+                modifier            = Modifier.fillMaxSize()
+            ) {
+                items(pokemons, key = { it.id }) { pokemon ->
+                    IOSTeamRow(
+                        pokemon  = pokemon,
+                        isFirst  = pokemons.indexOf(pokemon) == 0,
+                        isLast   = pokemons.indexOf(pokemon) == pokemons.lastIndex,
+                        onRemove = { onRemove(pokemon.id) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun IOSTeamRow(
+    pokemon: PokemonDetail,
+    isFirst: Boolean,
+    isLast: Boolean,
+    onRemove: () -> Unit
+) {
+    val typeClr    = typeColor(pokemon.types.firstOrNull() ?: "normal")
+    val topRadius  = if (isFirst) 12.dp else 0.dp
+    val botRadius  = if (isLast)  12.dp else 0.dp
+
+    Surface(
+        color    = MaterialTheme.colorScheme.surface,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(
+                RoundedCornerShape(
+                    topStart     = topRadius,
+                    topEnd       = topRadius,
+                    bottomStart  = botRadius,
+                    bottomEnd    = botRadius
+                )
+            )
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier          = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+        ) {
+            // Miniatura com fundo colorido por tipo
+            Box(
+                modifier        = Modifier
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(typeClr.copy(alpha = 0.18f)),
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model              = pokemon.imageUrl,
+                    contentDescription = pokemon.name,
+                    contentScale       = ContentScale.Fit,
+                    modifier           = Modifier.size(44.dp)
+                )
+            }
+
+            Spacer(Modifier.width(14.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text       = pokemon.name,
+                    fontSize   = 17.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color      = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text     = pokemon.types.joinToString(" · ") {
+                        it.replaceFirstChar { c -> c.uppercase() }
+                    },
+                    fontSize = 13.sp,
+                    color    = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Botão "Remover" estilo iOS — texto vermelho
+            TextButton(
+                onClick = onRemove,
+                colors  = ButtonDefaults.textButtonColors(contentColor = Color(0xFFFF3B30))
+            ) {
+                Text("Remover", fontSize = 15.sp)
+            }
+        }
+
+        // Separador estilo iOS (exceto no último item)
+        if (!isLast) {
+            Divider(
+                color     = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                thickness = 0.5.dp,
+                modifier  = Modifier.padding(start = 82.dp)
+            )
+        }
+    }
+}
