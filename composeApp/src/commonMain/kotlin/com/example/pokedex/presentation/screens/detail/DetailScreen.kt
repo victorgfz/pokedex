@@ -60,7 +60,6 @@ fun DetailScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // ── Cabeçalho com gradiente ───────────────────────────────────
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -85,14 +84,12 @@ fun DetailScreen(
                     )
                 }
 
-                // ── Conteúdo principal ────────────────────────────────────────
                 Surface(
                     shape    = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                     modifier = Modifier.fillMaxWidth().offset(y = (-20).dp)
                 ) {
                     Column(modifier = Modifier.padding(24.dp)) {
 
-                        // Nome e número
                         Row(
                             modifier              = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -111,7 +108,6 @@ fun DetailScreen(
                             )
                         }
 
-                        // Tipos
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier              = Modifier.padding(top = 8.dp, bottom = 16.dp)
@@ -119,12 +115,10 @@ fun DetailScreen(
                             pokemon.types.forEach { TypeBadge(it) }
                         }
 
-                        // Medidas
                         MeasureRow(pokemon)
 
                         Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-                        // Descrição
                         Text("Sobre", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         Text(
                             text     = pokemon.description,
@@ -134,7 +128,6 @@ fun DetailScreen(
                             modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
                         )
 
-                        // Stats
                         Text("Status Base", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(8.dp))
                         pokemon.stats.forEach { stat ->
@@ -143,7 +136,6 @@ fun DetailScreen(
 
                         Spacer(Modifier.height(24.dp))
 
-                        // Botão adicionar ao time
                         Button(
                             onClick  = {
                                 if (inTeam) teamViewModel.removeFromTeam(pokemon.id)

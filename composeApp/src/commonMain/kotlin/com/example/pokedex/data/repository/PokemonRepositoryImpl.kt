@@ -66,8 +66,6 @@ class PokemonRepositoryImpl(
         ).also { detailCache[id] = it }
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
     private fun extractIdFromUrl(url: String): Int =
         url.trimEnd('/').substringAfterLast('/').toInt()
 

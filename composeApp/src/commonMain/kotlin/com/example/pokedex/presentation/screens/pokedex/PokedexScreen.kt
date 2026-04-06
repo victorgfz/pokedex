@@ -28,7 +28,6 @@ fun PokedexScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        // SearchBar do Material3
         SearchBar(
             inputField = {
                 SearchBarDefaults.InputField(
