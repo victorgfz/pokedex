@@ -25,7 +25,6 @@ import com.pokedex.app.domain.model.PokemonDetail
 import com.pokedex.app.presentation.components.TypeBadge
 import com.pokedex.app.presentation.theme.typeColor
 
-// ── Material Design 3 ─────────────────────────────────────────────────────────
 @Composable
 actual fun PlatformTeamContent(
     pokemons: List<PokemonDetail>,
@@ -33,7 +32,6 @@ actual fun PlatformTeamContent(
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
 
-        // Banner com gradiente no topo
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -58,7 +56,6 @@ actual fun PlatformTeamContent(
         }
 
         if (pokemons.isEmpty()) {
-            // Estado vazio
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Seu time está vazio", fontSize = 18.sp, fontWeight = FontWeight.Medium)
@@ -103,7 +100,6 @@ private fun MaterialTeamCard(pokemon: PokemonDetail, onRemove: () -> Unit) {
                 )
                 .padding(12.dp)
         ) {
-            // Imagem com fundo circular
             Box(
                 modifier        = Modifier
                     .size(72.dp)
@@ -139,7 +135,6 @@ private fun MaterialTeamCard(pokemon: PokemonDetail, onRemove: () -> Unit) {
                 }
             }
 
-            // Botão remover — estilo FAB pequeno
             FilledIconButton(
                 onClick = onRemove,
                 colors  = IconButtonDefaults.filledIconButtonColors(

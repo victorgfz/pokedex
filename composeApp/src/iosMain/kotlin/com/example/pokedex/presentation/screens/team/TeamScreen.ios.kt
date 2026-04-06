@@ -19,9 +19,6 @@ import coil3.compose.AsyncImage
 import com.pokedex.app.domain.model.PokemonDetail
 import com.pokedex.app.presentation.theme.typeColor
 
-// ── Estética Apple (iOS) ───────────────────────────────────────────────────────
-// Design inspirado em SwiftUI/UIKit: cantos arredondados agressivos, tipografia
-// SF-style, sem botões coloridos demais, hierarquia limpa e espaçada.
 @Composable
 actual fun PlatformTeamContent(
     pokemons: List<PokemonDetail>,
@@ -55,7 +52,6 @@ actual fun PlatformTeamContent(
         }
 
         if (pokemons.isEmpty()) {
-            // Placeholder estilo iOS — ícone + texto centralizados
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -84,7 +80,6 @@ actual fun PlatformTeamContent(
                 }
             }
         } else {
-            // Lista estilo UITableView agrupada
             LazyColumn(
                 contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(1.dp),
@@ -131,7 +126,6 @@ private fun IOSTeamRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier          = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            // Miniatura com fundo colorido por tipo
             Box(
                 modifier        = Modifier
                     .size(52.dp)
@@ -165,7 +159,6 @@ private fun IOSTeamRow(
                 )
             }
 
-            // Botão "Remover" estilo iOS — texto vermelho
             TextButton(
                 onClick = onRemove,
                 colors  = ButtonDefaults.textButtonColors(contentColor = Color(0xFFFF3B30))
@@ -174,7 +167,6 @@ private fun IOSTeamRow(
             }
         }
 
-        // Separador estilo iOS (exceto no último item)
         if (!isLast) {
             Divider(
                 color     = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),

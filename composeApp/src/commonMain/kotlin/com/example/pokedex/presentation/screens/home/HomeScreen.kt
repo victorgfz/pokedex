@@ -35,7 +35,6 @@ fun HomeScreen(
                 )
             )
     ) {
-        // Pokébola decorativa de fundo
         PokeballDecoration(
             modifier = Modifier
                 .size(320.dp)
@@ -65,7 +64,6 @@ fun HomeScreen(
                 modifier = Modifier.padding(top = 8.dp, bottom = 48.dp)
             )
 
-            // Card: Pokédex
             HomeActionCard(
                 title    = "Pokédex",
                 subtitle = "Veja todos os Pokémons",
@@ -76,7 +74,6 @@ fun HomeScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Card: Meu Time
             HomeActionCard(
                 title    = "Meu Time",
                 subtitle = "Monte sua equipe",
@@ -129,7 +126,6 @@ private fun PokeballDecoration(modifier: Modifier = Modifier) {
         val cy = size.height / 2f
         val r  = size.minDimension / 2f
 
-        // Metade superior (vermelha)
         drawArc(
             color      = Color.Red,
             startAngle = 180f,
@@ -138,7 +134,6 @@ private fun PokeballDecoration(modifier: Modifier = Modifier) {
             size       = Size(r * 2, r * 2),
             topLeft    = Offset(cx - r, cy - r)
         )
-        // Metade inferior (branca)
         drawArc(
             color      = Color.White,
             startAngle = 0f,
@@ -147,7 +142,6 @@ private fun PokeballDecoration(modifier: Modifier = Modifier) {
             size       = Size(r * 2, r * 2),
             topLeft    = Offset(cx - r, cy - r)
         )
-        // Faixa central
         drawLine(
             color       = Color.Black,
             start       = Offset(cx - r, cy),
@@ -155,13 +149,11 @@ private fun PokeballDecoration(modifier: Modifier = Modifier) {
             strokeWidth = r * 0.06f,
             cap         = StrokeCap.Round
         )
-        // Círculo central externo
         drawCircle(
             color  = Color.Black,
             radius = r * 0.18f,
             style  = Stroke(width = r * 0.06f)
         )
-        // Círculo central interno
         drawCircle(color = Color.White, radius = r * 0.12f)
     }
 }

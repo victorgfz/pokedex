@@ -38,7 +38,6 @@ fun PokemonCard(pokemon: Pokemon, onClick: () -> Unit) {
                     )
                 )
         ) {
-            // Número do Pokémon
             Text(
                 text     = "#${pokemon.id.toString().padStart(3, '0')}",
                 fontSize = 11.sp,
@@ -46,7 +45,6 @@ fun PokemonCard(pokemon: Pokemon, onClick: () -> Unit) {
                 modifier = Modifier.align(Alignment.TopStart).padding(10.dp)
             )
 
-            // Imagem centralizada
             AsyncImage(
                 model          = pokemon.imageUrl,
                 contentDescription = pokemon.name,
@@ -57,7 +55,6 @@ fun PokemonCard(pokemon: Pokemon, onClick: () -> Unit) {
                     .padding(top = 12.dp)
             )
 
-            // Nome e tipos na parte inferior
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
