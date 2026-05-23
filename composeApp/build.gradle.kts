@@ -6,6 +6,12 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    id("androidx.room") version "2.7.0-alpha13"
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 kotlin {
@@ -43,6 +49,9 @@ kotlin {
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.lifecycle.runtime.compose)
 
+            implementation(libs.room.runtime)
+            implementation(libs.sqlite.bundled)
+
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
         }
@@ -56,6 +65,10 @@ kotlin {
             implementation(libs.ktor.client.darwin)
         }
     }
+}
+
+dependencies {
+    add("ksp", libs.room.compiler)
 }
 
 android {
