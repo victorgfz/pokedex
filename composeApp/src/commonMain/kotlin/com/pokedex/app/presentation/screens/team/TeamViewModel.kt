@@ -1,54 +1,56 @@
 package com.pokedex.app.presentation.screens.team
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.pokedex.app.domain.model.Pokemon
 import com.pokedex.app.domain.model.PokemonDetail
+import com.pokedex.app.domain.repository.PokemonRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
+data class TeamMember(
+    val pokemon: Pokemon,
+    val capturedLocation: String
+)
 sealed interface TeamUiState {
-    data class Success(val pokemons: List<PokemonDetail>) : TeamUiState
+    data class Success(val pokemons: List<TeamMember>) : TeamUiState
 }
 
-class TeamViewModel : ViewModel() {
+class TeamViewModel(
+    private val repository: PokemonRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<TeamUiState>(TeamUiState.Success(emptyList()))
     val uiState: StateFlow<TeamUiState> = _uiState.asStateFlow()
 
-    // Mantendo a propriedade 'team' para compatibilidade se necessário, mas preferindo uiState
-    val team: StateFlow<List<PokemonDetail>> get() = MutableStateFlow((_uiState.value as TeamUiState.Success).pokemons).asStateFlow()
-
-    fun addToTeam(pokemon: PokemonDetail) {
-        _uiState.update { currentState ->
-            if (currentState is TeamUiState.Success) {
-                val currentList = currentState.pokemons
-                val alreadyInTeam = currentList.any { it.id == pokemon.id }
-                if (!alreadyInTeam && currentList.size < 6) {
-                    TeamUiState.Success(currentList + pokemon)
-                } else {
-                    currentState
-                }
-            } else {
-                currentState
+    init {
+        viewModelScope.launch {
+            repository.getTeam().collect { members ->
+                _uiState.update { TeamUiState.Success(members) }
             }
+        }
+    }
+
+
+    fun addToTeam(pokemon: PokemonDetail, capturedLocation: String) {
+        viewModelScope.launch {
+            val currentState = _uiState.value
+            if (currentState is TeamUiState.Success) {
+                val alreadyIn = currentState.pokemons.any { it.pokemon.id == pokemon.id }
+                val isFull = currentState.pokemons.size >= 6
+
+                if (alreadyIn || isFull) return@launch
+            }
+            repository.addToTeam(pokemon, capturedLocation)
         }
     }
 
     fun removeFromTeam(pokemonId: Int) {
-        _uiState.update { currentState ->
-            if (currentState is TeamUiState.Success) {
-                TeamUiState.Success(currentState.pokemons.filter { it.id != pokemonId })
-            } else {
-                currentState
-            }
+        viewModelScope.launch {
+            repository.removeFromTeam(pokemonId)
         }
-    }
-
-    fun isInTeam(pokemonId: Int): Boolean {
-        val state = _uiState.value
-        return if (state is TeamUiState.Success) {
-            state.pokemons.any { it.id == pokemonId }
-        } else false
     }
 }

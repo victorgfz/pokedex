@@ -18,6 +18,17 @@ interface PokemonDao {
     @Query("SELECT COUNT(*) FROM pokemon_cache")
     suspend fun getCount(): Int
 
-    @Query("SELECT * FROM pokemon_cache WHERE name LIKE '%' || :query || '%' OR id = :query ORDER BY id ASC")
-    suspend fun searchPokemons(query: String): List<PokemonEntity>
+    @Query("""
+    SELECT * FROM pokemon_cache 
+    WHERE (:name IS NULL OR name LIKE '%' || :name || '%') 
+    AND (:type IS NULL OR types LIKE '%' || :type || '%')
+    ORDER BY id ASC
+    LIMIT :limit OFFSET :offset
+""")
+    suspend fun getFilteredPokemons(
+        limit: Int,
+        offset: Int,
+        name: String?,
+        type: String?
+    ): List<PokemonEntity>
 }

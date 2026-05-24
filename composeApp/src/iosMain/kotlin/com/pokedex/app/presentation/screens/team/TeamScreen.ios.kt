@@ -21,7 +21,7 @@ import com.pokedex.app.presentation.theme.typeColor
 
 @Composable
 actual fun PlatformTeamContent(
-    pokemons: List<PokemonDetail>,
+    pokemons: List<TeamMember>,
     onRemove: (pokemonId: Int) -> Unit
 ) {
     val iosBackground = MaterialTheme.colorScheme.background
@@ -85,12 +85,12 @@ actual fun PlatformTeamContent(
                 verticalArrangement = Arrangement.spacedBy(1.dp),
                 modifier            = Modifier.fillMaxSize()
             ) {
-                items(pokemons, key = { it.id }) { pokemon ->
+                items(pokemons, key = { it.pokemon.id }) { pokemon ->
                     IOSTeamRow(
-                        pokemon  = pokemon,
+                        pokemon  = pokemon.pokemon,
                         isFirst  = pokemons.indexOf(pokemon) == 0,
                         isLast   = pokemons.indexOf(pokemon) == pokemons.lastIndex,
-                        onRemove = { onRemove(pokemon.id) }
+                        onRemove = { onRemove(pokemon.pokemon.id) }
                     )
                 }
             }

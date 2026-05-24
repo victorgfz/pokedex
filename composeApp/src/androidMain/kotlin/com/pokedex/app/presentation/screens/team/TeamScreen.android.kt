@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,7 +28,7 @@ import com.pokedex.app.presentation.theme.typeColor
 
 @Composable
 actual fun PlatformTeamContent(
-    pokemons: List<PokemonDetail>,
+    pokemons: List<TeamMember>,
     onRemove: (pokemonId: Int) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -73,8 +74,8 @@ actual fun PlatformTeamContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier            = Modifier.fillMaxSize()
             ) {
-                items(pokemons, key = { it.id }) { pokemon ->
-                    MaterialTeamCard(pokemon = pokemon, onRemove = { onRemove(pokemon.id) })
+                items(pokemons, key = { it.pokemon.id }) { pokemon ->
+                    MaterialTeamCard(teamMember = pokemon, onRemove = { onRemove(pokemon.pokemon.id) })
                 }
             }
         }
@@ -82,7 +83,8 @@ actual fun PlatformTeamContent(
 }
 
 @Composable
-private fun MaterialTeamCard(pokemon: PokemonDetail, onRemove: () -> Unit) {
+private fun MaterialTeamCard(teamMember: TeamMember, onRemove: () -> Unit) {
+    val pokemon = teamMember.pokemon
     val typeClr = typeColor(pokemon.types.firstOrNull() ?: "normal")
 
     ElevatedCard(
@@ -132,6 +134,23 @@ private fun MaterialTeamCard(pokemon: PokemonDetail, onRemove: () -> Unit) {
                 Spacer(Modifier.height(4.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     pokemon.types.forEach { TypeBadge(it) }
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = Color.White.copy(0.85f),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = "Capturado em: ${teamMember.capturedLocation}",
+                        fontSize = 12.sp,
+                        color = Color.White.copy(0.85f)
+                    )
                 }
             }
 
