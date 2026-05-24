@@ -21,6 +21,6 @@ fun TeamScreen(teamViewModel: TeamViewModel) {
 
 @Composable
 expect fun PlatformTeamContent(
-    pokemons: List<PokemonDetail>,
+    pokemons: List<TeamMember>,
     onRemove: (pokemonId: Int) -> Unit
 )

@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,8 +38,62 @@ fun DetailScreen(
     val uiState by detailViewModel.uiState.collectAsStateWithLifecycle()
     val team by teamViewModel.uiState.collectAsStateWithLifecycle()
 
+    var showCaptureDialog by remember { mutableStateOf(false) }
+    var captureInput by remember { mutableStateOf("") }
+    var pendingPokemon by remember { mutableStateOf<PokemonDetail?>(null) }
+
     LaunchedEffect(pokemonId) {
         detailViewModel.loadPokemon(pokemonId)
+    }
+
+    if (showCaptureDialog && pendingPokemon != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showCaptureDialog = false
+                captureInput      = ""
+                pendingPokemon    = null
+            },
+            icon  = { Icon(Icons.Default.LocationOn, contentDescription = null) },
+            title = { Text("Onde você capturou este Pokémon?") },
+            text  = {
+                Column {
+                    Text(
+                        text  = "Informe o local de captura antes de adicioná-lo ao time.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value         = captureInput,
+                        onValueChange = { captureInput = it },
+                        label         = { Text("Local de captura") },
+                        placeholder   = { Text("Ex: Kanto City...") },
+                        singleLine    = true,
+                        modifier      = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = captureInput.isNotBlank(),
+                    onClick = {
+                        pendingPokemon?.let { pokemon ->
+                            teamViewModel.addToTeam(pokemon, captureInput.trim())
+                        }
+                        showCaptureDialog = false
+                        captureInput      = ""
+                        pendingPokemon    = null
+                    }
+                ) { Text("Confirmar") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showCaptureDialog = false
+                    captureInput      = ""
+                    pendingPokemon    = null
+                }) { Text("Cancelar") }
+            }
+        )
     }
 
     Scaffold(
@@ -79,7 +134,7 @@ fun DetailScreen(
                 is DetailUiState.Success -> {
                     val pokemon = state.pokemon
                     val inTeam = (team as? com.pokedex.app.presentation.screens.team.TeamUiState.Success)
-                        ?.pokemons?.any { it.id == pokemon.id } ?: false
+                        ?.pokemons?.any { it.pokemon.id == pokemon.id } ?: false
                     
                     val teamFull = (team as? com.pokedex.app.presentation.screens.team.TeamUiState.Success)
                         ?.let { it.pokemons.size >= 6 && !inTeam } ?: false
@@ -170,7 +225,10 @@ fun DetailScreen(
                                 Button(
                                     onClick = {
                                         if (inTeam) teamViewModel.removeFromTeam(pokemon.id)
-                                        else teamViewModel.addToTeam(pokemon)
+                                        else {
+                                            pendingPokemon = pokemon
+                                            showCaptureDialog = true
+                                        }
                                     },
                                     enabled = !teamFull || inTeam,
                                     colors = ButtonDefaults.buttonColors(

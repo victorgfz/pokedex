@@ -3,11 +3,14 @@ package com.pokedex.app.data.local.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.pokedex.app.data.local.dao.PokemonDao
+import com.pokedex.app.data.local.dao.TeamDao
 import com.pokedex.app.data.local.entity.PokemonEntity
+import com.pokedex.app.data.local.entity.TeamEntity
 
-@Database(entities = [PokemonEntity::class], version = 1)
+@Database(entities = [PokemonEntity::class, TeamEntity::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun pokemonDao(): PokemonDao
+    abstract fun teamDao(): TeamDao
 }
 
 expect fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase>

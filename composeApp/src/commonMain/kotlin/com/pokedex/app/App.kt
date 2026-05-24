@@ -16,11 +16,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.pokedex.app.di.AppModule
 import com.pokedex.app.presentation.navigation.Screen
 import com.pokedex.app.presentation.screens.detail.DetailScreen
 import com.pokedex.app.presentation.screens.home.HomeScreen
 import com.pokedex.app.presentation.screens.pokedex.PokedexScreen
+import com.pokedex.app.presentation.screens.pokedex.PokedexViewModel
 import com.pokedex.app.presentation.screens.team.TeamScreen
+import com.pokedex.app.presentation.screens.team.TeamUiState
 import com.pokedex.app.presentation.screens.team.TeamViewModel
 import com.pokedex.app.presentation.theme.PokeDexTheme
 
@@ -37,9 +40,12 @@ fun App() {
         val isTeam     = currentDest?.hasRoute<Screen.Team>() == true
         val isDetail   = currentDest?.hasRoute<Screen.PokemonDetail>() == true
 
-        // TeamViewModel vive no escopo do App — compartilhado entre Detail e Team
-        val teamViewModel: TeamViewModel = viewModel { TeamViewModel() }
-        val teamCount by teamViewModel.team.collectAsState()
+        val repository = AppModule.pokemonRepository
+
+        val teamViewModel: TeamViewModel = viewModel { TeamViewModel(repository) }
+
+        val teamUiState by teamViewModel.uiState.collectAsState()
+        val teamCount = (teamUiState as? TeamUiState.Success)?.pokemons?.size ?: 0
 
         Scaffold(
             topBar = {
@@ -96,8 +102,8 @@ fun App() {
                             icon = {
                                 BadgedBox(
                                     badge = {
-                                        if (teamCount.isNotEmpty()) {
-                                            Badge { Text(teamCount.size.toString()) }
+                                        if (teamCount > 0) {
+                                            Badge { Text(teamCount.toString()) }
                                         }
                                     }
                                 ) {
@@ -123,7 +129,12 @@ fun App() {
                 }
 
                 composable<Screen.PokedexList> {
+                    val pokedexViewModel: PokedexViewModel = viewModel {
+                        PokedexViewModel(AppModule.getPokemonList)
+                    }
+
                     PokedexScreen(
+                        viewModel = pokedexViewModel,
                         onPokemonClick = { id ->
                             navController.navigate(Screen.PokemonDetail(id))
                         }

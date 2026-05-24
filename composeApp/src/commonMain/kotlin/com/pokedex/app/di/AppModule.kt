@@ -8,7 +8,6 @@ import com.pokedex.app.data.repository.PokemonRepositoryImpl
 import com.pokedex.app.domain.repository.PokemonRepository
 import com.pokedex.app.domain.usecase.GetPokemonDetailUseCase
 import com.pokedex.app.domain.usecase.GetPokemonListUseCase
-import com.pokedex.app.domain.usecase.SearchPokemonUseCase
 
 object AppModule {
     
@@ -23,7 +22,8 @@ object AppModule {
     val pokemonRepository: PokemonRepository by lazy {
         PokemonRepositoryImpl(
             api = apiService,
-            dao = database.pokemonDao()
+            pokemonDao = database.pokemonDao(),
+            teamDao = database.teamDao()
         )
     }
 
@@ -33,9 +33,5 @@ object AppModule {
 
     val getPokemonDetail: GetPokemonDetailUseCase by lazy {
         GetPokemonDetailUseCase(pokemonRepository)
-    }
-
-    val searchPokemon: SearchPokemonUseCase by lazy {
-        SearchPokemonUseCase(pokemonRepository)
     }
 }

@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.pokedex.app.di.AppModule
 import com.pokedex.app.domain.model.Pokemon
 import com.pokedex.app.domain.usecase.GetPokemonListUseCase
-import com.pokedex.app.domain.usecase.SearchPokemonUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +18,7 @@ sealed interface PokedexUiState {
     data class Success(
         val pokemons: List<Pokemon>,
         val searchQuery: String = "",
+        val selectedType: String = "All",
         val isNextPageLoading: Boolean = false,
         val endReached: Boolean = false
     ) : PokedexUiState
@@ -26,91 +26,90 @@ sealed interface PokedexUiState {
 }
 
 class PokedexViewModel(
-    private val getPokemonList: GetPokemonListUseCase = AppModule.getPokemonList,
-    private val searchPokemon: SearchPokemonUseCase = AppModule.searchPokemon
+    private val getPokemonList: GetPokemonListUseCase = AppModule.getPokemonList
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow<PokedexUiState>(PokedexUiState.Loading)
     val uiState: StateFlow<PokedexUiState> = _uiState.asStateFlow()
 
-    private var currentPage = 0
+    private var currentOffset = 0
     private val pageSize = 20
     private var searchJob: Job? = null
+    private var isFetching = false
 
-    init {
-        loadPokemons()
-    }
+    fun loadPokemons(isNewFilter: Boolean = false) {
+        if (isFetching) return
 
-    fun loadPokemons() {
-        if (_uiState.value is PokedexUiState.Success && (_uiState.value as PokedexUiState.Success).isNextPageLoading) return
+        val state = _uiState.value
+
+        if (state is PokedexUiState.Success && state.isNextPageLoading && !isNewFilter) return
+        if (state is PokedexUiState.Success && state.endReached && !isNewFilter) return
+
+        if (isNewFilter) {
+            currentOffset = 0
+            _uiState.value = PokedexUiState.Loading
+        }
 
         viewModelScope.launch {
-            val currentState = _uiState.value
-            if (currentState is PokedexUiState.Success) {
-                _uiState.update { currentState.copy(isNextPageLoading = true) }
-            } else {
+            isFetching = true
+            val query = (state as? PokedexUiState.Success)?.searchQuery ?: ""
+            val type = (state as? PokedexUiState.Success)?.selectedType ?: "All"
+
+            if (isNewFilter) {
                 _uiState.value = PokedexUiState.Loading
+            } else if (state is PokedexUiState.Success) {
+                _uiState.update { state.copy(isNextPageLoading = true) }
             }
 
-            runCatching { 
-                getPokemonList(limit = pageSize, offset = currentPage * pageSize) 
+            runCatching {
+                getPokemonList(
+                    limit = pageSize,
+                    offset = currentOffset,
+                    searchQuery = query,
+                    typeFilter = type
+                )
             }.onSuccess { newList ->
-                _uiState.update { state ->
-                    val currentList = if (state is PokedexUiState.Success) state.pokemons else emptyList()
-                    val updatedList = currentList + newList
+                _uiState.update { currentState ->
+                    val currentList = if (isNewFilter || currentState !is PokedexUiState.Success) {
+                        emptyList()
+                    } else {
+                        currentState.pokemons
+                    }
+
                     PokedexUiState.Success(
-                        pokemons = updatedList,
+                        pokemons = currentList + newList,
+                        searchQuery = query,
+                        selectedType = type,
                         endReached = newList.size < pageSize,
                         isNextPageLoading = false
                     )
                 }
-                currentPage++
+                currentOffset += pageSize
             }.onFailure { e ->
-                if (_uiState.value is PokedexUiState.Loading) {
-                    _uiState.value = PokedexUiState.Error(
-                        e.message ?: "Erro ao carregar Pokémons."
-                    )
-                } else {
-                    _uiState.update { (it as PokedexUiState.Success).copy(isNextPageLoading = false) }
-                }
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                _uiState.value = PokedexUiState.Error(e.message ?: "Erro desconhecido")
             }
+            isFetching = false
         }
     }
 
     fun onSearchQueryChange(query: String) {
         searchJob?.cancel()
-
-        _uiState.update { state ->
-            if (state is PokedexUiState.Success) state.copy(searchQuery = query) else state
-        }
-
-        if (query.isBlank()) {
-            resetPagination()
-            return
-        }
-
         searchJob = viewModelScope.launch {
-            delay(500) // Debounce
-            runCatching {
-                searchPokemon(query)
-            }.onSuccess { results ->
-                _uiState.update { state ->
-                    if (state is PokedexUiState.Success) {
-                        state.copy(
-                            pokemons = results,
-                            endReached = true // Disable pagination during search
-                        )
-                    } else {
-                        PokedexUiState.Success(pokemons = results, searchQuery = query, endReached = true)
-                    }
-                }
+            _uiState.update { state ->
+                if (state is PokedexUiState.Success) state.copy(searchQuery = query)
+                else PokedexUiState.Success(emptyList(), searchQuery = query)
             }
+
+            delay(500)
+            loadPokemons(isNewFilter = true)
         }
     }
 
-    private fun resetPagination() {
-        currentPage = 0
-        _uiState.value = PokedexUiState.Loading
-        loadPokemons()
+    fun onTypeChange(type: String) {
+        _uiState.update { state ->
+            if (state is PokedexUiState.Success) state.copy(selectedType = type)
+            else PokedexUiState.Success(emptyList(), selectedType = type)
+        }
+        loadPokemons(isNewFilter = true)
     }
 }
